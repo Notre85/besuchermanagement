@@ -57,4 +57,4 @@ CREATE TABLE visits (
 -- Initialdaten für Rollen
 INSERT INTO roles (role_name) VALUES ('Administrator'), ('Benutzer');
 
--- InitialDie Erstellung des Admin-Benutzers erfolgt im `setup.sh`-Skript
+-- Hinweis: Die Erstellung des Admin-Benutzers erfolgt im `setup.sh`-Skript
