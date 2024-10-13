@@ -1,0 +1,17 @@
+{
+    "name": "yourname/besuchermanagement",
+    "description": "Webbasiertes Besuchermanagement-System",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "monolog/monolog": "^2.0",
+        "fpdf/fpdf": "^1.81",
+        "vlucas/phpdotenv": "^5.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "models/",
+            "App\\Controllers\\": "controllers/"
+        }
+    }
+}

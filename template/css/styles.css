@@ -1,0 +1,11 @@
+/* template/css/styles.css */
+
+body {
+    padding-top: 70px;
+}
+
+footer.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
