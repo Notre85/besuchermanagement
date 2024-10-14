@@ -14,8 +14,8 @@ $currentUser = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <a class="navbar-brand" href="index.php">
-            <?php if (file_exists(__DIR__ . '/../assets/images/logo.png')): ?>
-                <img src="assets/images/logo.png" width="30" height="30" class="d-inline-block align-top" alt="Logo">
+            <?php if (file_exists(__DIR__ . '/../assets/images/logo.svg')): ?>
+                <img src="assets/images/logo.svg" width="30" height="30" class="d-inline-block align-top" alt="Logo">
             <?php endif; ?>
             Besuchermanagement
         </a>
