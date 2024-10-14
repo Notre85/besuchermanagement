@@ -5,6 +5,9 @@ namespace App\Controllers;
 
 use PDO;
 
+// Einbinden der notwendigen Dateien
+require_once __DIR__ . '/../config/csrf.php'; // CSRF-Schutz einbinden
+
 class BaseController {
     protected $pdo;
     protected $logger;

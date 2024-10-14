@@ -3,7 +3,7 @@
         'name' => 'yourname/besuchermanagement',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '186c4b921aa8df51c9557855879884e6368fe360',
+        'reference' => '0d59916280ac5673349e269233fbdacb3d128eef',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -61,6 +61,15 @@
                 0 => '1.0.0 || 2.0.0 || 3.0.0',
             ),
         ),
+        'setasign/fpdf' => array(
+            'pretty_version' => '1.8.2',
+            'version' => '1.8.2.0',
+            'reference' => 'd77904018090c17dc9f3ab6e944679a7a47e710a',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../setasign/fpdf',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'symfony/polyfill-ctype' => array(
             'pretty_version' => 'v1.31.0',
             'version' => '1.31.0.0',
@@ -100,7 +109,7 @@
         'yourname/besuchermanagement' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '186c4b921aa8df51c9557855879884e6368fe360',
+            'reference' => '0d59916280ac5673349e269233fbdacb3d128eef',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

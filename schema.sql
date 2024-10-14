@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_name VARCHAR(50) NOT NULL,
     role ENUM('Berichtersteller', 'Manager', 'Admin', 'Superadmin') NOT NULL DEFAULT 'Berichtersteller',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS visitors (

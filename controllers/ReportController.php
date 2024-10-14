@@ -6,88 +6,103 @@ namespace App\Controllers;
 use App\Visit;
 use FPDF;
 
-class ReportController extends BaseController {
+class ReportController extends BaseController
+{
     protected $visitModel;
 
-    public function __construct($pdo, $logger) {
+    public function __construct($pdo, $logger)
+    {
         parent::__construct($pdo, $logger);
         $this->visitModel = new Visit($pdo);
     }
 
-    public function showReportForm() {
+    // Zeigt das Formular an
+    public function showReportForm()
+    {
         $this->render('report_form');
     }
 
-    public function generateReport() {
+    // Generiert den Bericht als HTML
+    public function generateReport()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!verify_csrf_token($_POST['csrf_token'])) {
-                $this->logger->error('CSRF-Token-Validierung fehlgeschlagen bei der Berichtserstellung.');
                 die('Ungültiges CSRF-Token.');
             }
 
-            $timeframe = $_POST['timeframe'] ?? 'month';
-            $start_date = '';
-            $end_date = '';
+            $reportType = $_POST['report_type'] ?? 'time';
+            $filter = $_POST['filter'] ?? null;
+            $start_date = $_POST['start_date'] . ' 00:00:00';
+            $end_date = $_POST['end_date'] . ' 23:59:59';
+            $visits = [];
 
-            switch ($timeframe) {
-                case 'today':
-                    $start_date = date('Y-m-d 00:00:00');
-                    $end_date = date('Y-m-d 23:59:59');
+            switch ($reportType) {
+                case 'visitor':
+                    $visits = $this->visitModel->getVisitsByVisitor($filter, $start_date, $end_date);
                     break;
-                case 'week':
-                    $start_date = date('Y-m-d 00:00:00', strtotime('monday this week'));
-                    $end_date = date('Y-m-d 23:59:59', strtotime('sunday this week'));
+                case 'company':
+                    $visits = $this->visitModel->getVisitsByCompany($filter, $start_date, $end_date);
                     break;
-                case 'month':
-                    $start_date = date('Y-m-01 00:00:00');
-                    $end_date = date('Y-m-t 23:59:59');
-                    break;
-                case 'year':
-                    $start_date = date('Y-01-01 00:00:00');
-                    $end_date = date('Y-12-31 23:59:59');
-                    break;
+                case 'time':
                 default:
-                    $start_date = date('Y-m-01 00:00:00');
-                    $end_date = date('Y-m-t 23:59:59');
+                    $visits = $this->visitModel->getVisitsByDateRange($start_date, $end_date);
+                    break;
             }
 
-            $visits = $this->visitModel->getVisitsByDateRange($start_date, $end_date);
+            $this->render('report_form', ['visits' => $visits]);
+        } else {
+            $this->redirect('report.php');
+        }
 
-            // PDF-Generierung
-            $pdf = new FPDF();
+        // Logging der HTML-Berichtserstellung
+        $this->logger->info('HTML-Bericht im Backend angezeigt.', [
+            'Berichtsart' => $reportType,
+            'Startdatum' => $start_date,
+            'Enddatum' => $end_date,
+            'Anzahl Besuche' => count($visits)
+        ]);
+    }
+
+    // Generiert das PDF und loggt die Aktion
+    public function generatePdf()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!verify_csrf_token($_POST['csrf_token'])) {
+                die('Ungültiges CSRF-Token.');
+            }
+
+            $reportType = $_POST['report_type'] ?? 'time';
+            $filter = $_POST['filter'] ?? null;
+            $start_date = $_POST['start_date'] . ' 00:00:00';
+            $end_date = $_POST['end_date'] . ' 23:59:59';
+            $visits = [];
+
+            switch ($reportType) {
+                case 'visitor':
+                    $visits = $this->visitModel->getVisitsByVisitor($filter, $start_date, $end_date);
+                    break;
+                case 'company':
+                    $visits = $this->visitModel->getVisitsByCompany($filter, $start_date, $end_date);
+                    break;
+                case 'time':
+                default:
+                    $visits = $this->visitModel->getVisitsByDateRange($start_date, $end_date);
+                    break;
+            }
+
+            // Logging der PDF-Erstellung
+            $this->logger->info('PDF-Bericht wird erstellt.', [
+                'Berichtsart' => $reportType,
+                'Startdatum' => $start_date,
+                'Enddatum' => $end_date,
+                'Anzahl Besuche' => count($visits)
+            ]);
+
+            // PDF mit Template generieren
+            require_once __DIR__ . '/../assets/pdf-vorlagen/report_template.php';
+            $pdf = new \ReportTemplate($this->logger);
             $pdf->AddPage();
-            $pdf->SetFont('Arial', 'B', 16);
-            $pdf->Cell(0, 10, 'Besuchsbericht', 0, 1, 'C');
-            $pdf->SetFont('Arial', '', 12);
-            $pdf->Cell(0, 10, "Zeitraum: " . date('d.m.Y', strtotime($start_date)) . " bis " . date('d.m.Y', strtotime($end_date)), 0, 1, 'C');
-            $pdf->Ln(10);
-
-            // Tabellenkopf
-            $pdf->SetFont('Arial', 'B', 12);
-            $pdf->Cell(40, 10, 'Name', 1);
-            $pdf->Cell(40, 10, 'Firma', 1);
-            $pdf->Cell(60, 10, 'Besuchsgrund', 1);
-            $pdf->Cell(30, 10, 'Check-In', 1);
-            $pdf->Cell(30, 10, 'Check-Out', 1);
-            $pdf->Ln();
-
-            // Tabelleninhalt
-            $pdf->SetFont('Arial', '', 12);
-            foreach ($visits as $visit) {
-                $name = $visit['first_name'] . ' ' . $visit['last_name'];
-                $company = $visit['company'] ?? 'N/A';
-                $reason = $visit['visit_reason'];
-                $checkin = date('d.m.Y H:i', strtotime($visit['checkin_time']));
-                $checkout = $visit['checkout_time'] ? date('d.m.Y H:i', strtotime($visit['checkout_time'])) : 'Noch nicht ausgecheckt';
-
-                $pdf->Cell(40, 10, $name, 1);
-                $pdf->Cell(40, 10, $company, 1);
-                $pdf->Cell(60, 10, substr($reason, 0, 30) . (strlen($reason) > 30 ? '...' : ''), 1);
-                $pdf->Cell(30, 10, $checkin, 1);
-                $pdf->Cell(30, 10, $checkout, 1);
-                $pdf->Ln();
-            }
-
+            $pdf->ReportContent($visits, $start_date, $end_date);
             $pdf->Output('D', 'Besuchsbericht.pdf');
             exit();
         } else {

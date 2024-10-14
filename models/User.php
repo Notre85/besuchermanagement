@@ -23,6 +23,18 @@ class User {
     }
 
     /**
+     * Findet einen Benutzer anhand des Benutzernamens.
+     *
+     * @param string $username
+     * @return array|false
+     */
+    public function findByUsername($username) {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE username = :username LIMIT 1");
+        $stmt->execute(['username' => $username]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Erstellt einen neuen Benutzer.
      *
      * @param string $username
@@ -34,8 +46,8 @@ class User {
      */
     public function create($username, $hashed_password, $first_name, $last_name, $role) {
         $stmt = $this->pdo->prepare("
-            INSERT INTO users (username, password, first_name, last_name, role)
-            VALUES (:username, :password, :first_name, :last_name, :role)
+            INSERT INTO users (username, password, first_name, last_name, role, created_at)
+            VALUES (:username, :password, :first_name, :last_name, :role, NOW())
         ");
         return $stmt->execute([
             'username'   => $username,
@@ -59,7 +71,7 @@ class User {
     public function update($id, $username, $first_name, $last_name, $role) {
         $stmt = $this->pdo->prepare("
             UPDATE users
-            SET username = :username, first_name = :first_name, last_name = :last_name, role = :role
+            SET username = :username, first_name = :first_name, last_name = :last_name, role = :role, updated_at = NOW()
             WHERE id = :id
         ");
         return $stmt->execute([
@@ -85,7 +97,7 @@ class User {
     public function updateWithPassword($id, $username, $hashed_password, $first_name, $last_name, $role) {
         $stmt = $this->pdo->prepare("
             UPDATE users
-            SET username = :username, password = :password, first_name = :first_name, last_name = :last_name, role = :role
+            SET username = :username, password = :password, first_name = :first_name, last_name = :last_name, role = :role, updated_at = NOW()
             WHERE id = :id
         ");
         return $stmt->execute([

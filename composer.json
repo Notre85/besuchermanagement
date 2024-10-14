@@ -5,8 +5,9 @@
     "require": {
         "php": ">=7.4",
         "monolog/monolog": "^2.0",
-        "fpdf/fpdf": "^1.81",
-        "vlucas/phpdotenv": "^5.4"
+        "fpdf/fpdf": "^1.86",
+        "vlucas/phpdotenv": "^5.4",
+        "setasign/fpdf": "^1.8"
     },
     "autoload": {
         "psr-4": {
