@@ -9,13 +9,13 @@ class Visitor extends BaseModel {
     public function findById($id) {
         $stmt = $this->pdo->prepare("SELECT * FROM visitors WHERE id = :id LIMIT 1");
         $stmt->execute(['id' => $id]);
-        return $stmt->fetch();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function findByName($first_name, $last_name) {
         $stmt = $this->pdo->prepare("SELECT * FROM visitors WHERE first_name = :first_name AND last_name = :last_name LIMIT 1");
         $stmt->execute(['first_name' => $first_name, 'last_name' => $last_name]);
-        return $stmt->fetch();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function create($first_name, $last_name, $company = null) {
@@ -29,7 +29,7 @@ class Visitor extends BaseModel {
 
     public function getAllVisitors() {
         $stmt = $this->pdo->query("SELECT * FROM visitors");
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function update($id, $first_name, $last_name, $company) {

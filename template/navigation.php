@@ -36,6 +36,11 @@ $currentUser = isset($_SESSION['user']) ? $_SESSION['user'] : null;
                         <li class="nav-item">
                             <a class="nav-link" href="benutzer_verwaltung.php">Benutzerverwaltung</a>
                         </li>
+                    <?php if (in_array($currentUser['role'], ['Manager', 'Admin', 'Superadmin'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="visitor_management.php">Besucherverwaltung</a>
+                        </li>
+                    <?php endif; ?>
                         <li class="nav-item">
                             <a class="nav-link" href="drucker_verwaltung.php">Druckerverwaltung</a>
                         </li>

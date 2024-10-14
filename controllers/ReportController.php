@@ -99,11 +99,14 @@ class ReportController extends BaseController
             ]);
 
             // PDF mit Template generieren
+            usort($visits, function($a, $b) {
+              return $a['id'] <=> $b['id'];
+            });
             require_once __DIR__ . '/../assets/pdf-vorlagen/report_template.php';
             $pdf = new \ReportTemplate($this->logger);
             $pdf->AddPage();
             $pdf->ReportContent($visits, $start_date, $end_date);
-            $pdf->Output('D', 'Besuchsbericht.pdf');
+            $pdf->Output('Besuchsbericht.pdf', 'I'); // PDF als Download (D) mit korrektem Dateinamen
             exit();
         } else {
             $this->redirect('report.php');

@@ -3,7 +3,7 @@
         'name' => 'yourname/besuchermanagement',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '0d59916280ac5673349e269233fbdacb3d128eef',
+        'reference' => 'ce13b5bc5b58fc6c3c738f60ff10f088836c0781',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -97,6 +97,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'tecnickcom/tcpdf' => array(
+            'pretty_version' => '6.7.6',
+            'version' => '6.7.6.0',
+            'reference' => '4cf1ab192e87e6916d20f93077b2bdfa96a2f848',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../tecnickcom/tcpdf',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'vlucas/phpdotenv' => array(
             'pretty_version' => 'v5.6.1',
             'version' => '5.6.1.0',
@@ -109,7 +118,7 @@
         'yourname/besuchermanagement' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '0d59916280ac5673349e269233fbdacb3d128eef',
+            'reference' => 'ce13b5bc5b58fc6c3c738f60ff10f088836c0781',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

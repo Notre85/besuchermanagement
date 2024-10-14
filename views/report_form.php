@@ -79,7 +79,7 @@ document.getElementById('report_type').addEventListener('change', function() {
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="6" class="text-center">Noch keine Berichte verf%uumlgbar</td>
+                    <td colspan="6" class="text-center">Noch keine Berichte verf&uumlgbar</td>
                 </tr>
             <?php endif; ?>
         </tbody>
