@@ -9,6 +9,7 @@
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/config/db.php'; // Datenbankverbindung
 require_once __DIR__ . '/config/logger.php'; // Logger
+require_once __DIR__ . '/config/csrf.php';
 
 // Namespace sicherstellen und den Controller laden
 use App\Controllers\VisitorController;

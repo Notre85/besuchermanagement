@@ -8,8 +8,6 @@ require_once __DIR__ . '/config/csrf.php';
 
 use App\Controllers\DashboardController;
 
-session_start();
-
 $logger = get_logger();
 
 $dashboardController = new DashboardController($pdo, $logger);

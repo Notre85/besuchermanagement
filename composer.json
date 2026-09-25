@@ -6,12 +6,13 @@
         "php": ">=7.4",
         "monolog/monolog": "^2.0",
         "vlucas/phpdotenv": "^5.4",
-        "tecnickcom/tcpdf": "^6.7"
+        "tecnickcom/tcpdf": "^6.8"
     },
     "autoload": {
         "psr-4": {
             "App\\": "models/",
-            "App\\Controllers\\": "controllers/"
+            "App\\Controllers\\": "controllers/",
+            "App\\Services\\": "services/"
         }
     }
 }

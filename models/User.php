@@ -74,13 +74,14 @@ class User {
             SET username = :username, first_name = :first_name, last_name = :last_name, role = :role, updated_at = NOW()
             WHERE id = :id
         ");
-        return $stmt->execute([
+        $stmt->execute([
             'id'         => $id,
             'username'   => $username,
             'first_name' => $first_name,
             'last_name'  => $last_name,
             'role'       => $role
         ]);
+        return $stmt->rowCount() === 1;
     }
 
     /**
@@ -119,6 +120,26 @@ class User {
     public function delete($id) {
         $stmt = $this->pdo->prepare("DELETE FROM users WHERE id = :id");
         return $stmt->execute(['id' => $id]);
+    }
+
+    public function mayChangeRoleOrDelete(int $id, ?string $newRole = null): bool
+    {
+        $stmt = $this->pdo->prepare('SELECT role FROM users WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $currentRole = $stmt->fetchColumn();
+        if ($currentRole === false) {
+            return false;
+        }
+
+        $isSelf = $id === (int) ($_SESSION['user']['id'] ?? 0);
+        if ($isSelf && ($newRole === null || $newRole !== $currentRole)) {
+            return false;
+        }
+        if ($currentRole === 'Superadmin' && $newRole !== 'Superadmin') {
+            $count = (int) $this->pdo->query("SELECT COUNT(*) FROM users WHERE role = 'Superadmin'")->fetchColumn();
+            return $count > 1;
+        }
+        return true;
     }
 }
 ?>

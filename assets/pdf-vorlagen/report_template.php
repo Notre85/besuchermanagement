@@ -2,8 +2,6 @@
 // assets/pdf-vorlagen/report_template.php
 
 require_once __DIR__ . '/../../vendor/autoload.php'; // Autoload für TCPDF
-use TCPDF;
-
 class ReportTemplate extends TCPDF
 {
     protected $logger;

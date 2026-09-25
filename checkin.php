@@ -8,8 +8,6 @@ require_once __DIR__ . '/config/csrf.php';
 
 use App\Controllers\CheckInController;
 
-session_start();
-
 $logger = get_logger();
 
 // Überprüfen, ob die Anfrage eine POST-Anfrage ist

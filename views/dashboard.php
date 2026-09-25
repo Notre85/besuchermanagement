@@ -5,6 +5,14 @@
 <?php if (isset($_GET['success']) && $_GET['success'] === 'backup'): ?>
     <div class="alert alert-success">Backup erfolgreich erstellt!</div>
 <?php endif; ?>
+<?php if (isset($_GET['success']) && $_GET['success'] === 'badge_queued'): ?><div class="alert alert-success">Besucherausweis wurde als Druckjob eingereiht.</div><?php endif; ?>
+
+<?php if (isset($_SESSION['user']['role']) && in_array($_SESSION['user']['role'], ['Admin', 'Superadmin'], true)): ?>
+    <form method="POST" action="backup.php" class="mb-3">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+        <button type="submit" class="btn btn-outline-secondary">Datenbank-Backup erstellen</button>
+    </form>
+<?php endif; ?>
 
 <div class="row">
     <div class="col-md-6">
@@ -51,10 +59,10 @@
                     echo 'Fehler beim Auschecken.';
                     break;
                 case 'invalid_visit_id':
-                    echo 'Ungültige Visit ID.';
+                    echo 'UngÃ¼ltige Visit ID.';
                     break;
                 case 'invalid_visitor_id':
-                    echo 'Ungültige Besucher ID.';
+                    echo 'UngÃ¼ltige Besucher ID.';
                     break;
                 case 'already_checked_in':
                     echo 'Der Besucher ist bereits eingecheckt.';
@@ -63,7 +71,7 @@
                     echo 'Der Besucher ist nicht eingecheckt.';
                     break;
                 case 'missing_parameters':
-                    echo 'Weder Visit ID noch Visitor ID für Check-Out angegeben.';
+                    echo 'Weder Visit ID noch Visitor ID fÃ¼r Check-Out angegeben.';
                     break;
                 default:
                     echo 'Ein unbekannter Fehler ist aufgetreten.';
@@ -109,7 +117,13 @@
                         </button>
 
                         <!-- Check-Out via Visit ID -->
-                        <a href="index.php?action=checkout&visit_id=<?php echo htmlspecialchars($visit['visit_id']); ?>" class="btn btn-success btn-sm">Check-Out</a>
+                        <form method="POST" action="index.php" style="display:inline;">
+                            <input type="hidden" name="action" value="checkout">
+                            <input type="hidden" name="visit_id" value="<?php echo htmlspecialchars($visit['visit_id'], ENT_QUOTES, 'UTF-8'); ?>">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generate_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                            <button type="submit" class="btn btn-success btn-sm">Check-Out</button>
+                        </form>
+                        <form method="POST" action="badge.php?action=queue" style="display:inline;"><input type="hidden" name="visit_id" value="<?php echo (int) $visit['visit_id']; ?>"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generate_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>"><button type="submit" class="btn btn-outline-secondary btn-sm">Ausweis drucken</button></form>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -136,7 +150,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">SchlieÃŸen</button>
       </div>
     </div>
   </div>

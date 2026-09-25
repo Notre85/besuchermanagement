@@ -31,6 +31,9 @@
                 case 'user_deletion_failed':
                     echo 'Fehler beim Löschen des Benutzers.';
                     break;
+                case 'protected_user':
+                    echo 'Der letzte Superadmin oder das eigene Konto darf nicht entfernt bzw. herabgestuft werden.';
+                    break;
                 case 'invalid_user_id':
                     echo 'Ungültige Benutzer-ID.';
                     break;
@@ -42,7 +45,7 @@
 <?php endif; ?>
 
 <h3>Neuen Benutzer hinzufügen</h3>
-<form method="POST" action="../controllers/BenutzerController.php?action=createUser">
+<form method="POST" action="benutzer_verwaltung.php?action=create">
     <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
     
     <div class="form-group mb-3">
@@ -99,7 +102,7 @@
                 <!-- Update-Formular -->
                 <td><?php echo htmlspecialchars($user['id']); ?></td>
                 <td>
-                    <form method="POST" action="../controllers/BenutzerController.php?action=updateUser">
+                    <form method="POST" action="benutzer_verwaltung.php?action=update">
                         <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                         <input type="hidden" name="id" value="<?php echo htmlspecialchars($user['id']); ?>">
                         <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" class="form-control" required>
@@ -124,7 +127,7 @@
                     </form>
                     
                     <!-- Delete-Formular -->
-                    <form method="POST" action="../controllers/BenutzerController.php?action=deleteUser" style="display:inline;">
+                    <form method="POST" action="benutzer_verwaltung.php?action=delete" style="display:inline;">
                         <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                         <input type="hidden" name="id" value="<?php echo htmlspecialchars($user['id']); ?>">
                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?');">Löschen</button>

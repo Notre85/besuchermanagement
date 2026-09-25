@@ -27,11 +27,20 @@ apt-get update || error_exit "Fehler beim Aktualisieren der Paketlisten."
 
 # Installation von Apache, PHP, MariaDB, Git und Composer
 echo -e "${GREEN}Installieren von Apache, PHP, MariaDB, Git und Composer...${NC}"
-apt-get install -y apache2 php libapache2-mod-php php-mysql mariadb-server git composer || error_exit "Fehler bei der Installation der Pakete."
+apt-get install -y apache2 php libapache2-mod-php php-mysql php-curl mariadb-server git composer cups-client curl jq || error_exit "Fehler bei der Installation der Pakete."
 
-# Aktivieren des Apache `mod_rewrite` Moduls
-echo -e "${GREEN}Aktivieren des Apache mod_rewrite Moduls...${NC}"
+# Aktivieren der benötigten Apache-Module
+echo -e "${GREEN}Aktivieren der Apache-Module...${NC}"
 a2enmod rewrite || error_exit "Fehler beim Aktivieren des mod_rewrite Moduls."
+a2enmod headers || error_exit "Fehler beim Aktivieren des mod_headers Moduls."
+a2enconf security || error_exit "Fehler beim Aktivieren der Apache-Sicherheitskonfiguration."
+
+# Globale Apache-Sicherheitsparameter setzen. Diese Direktiven gelten nicht
+# zuverlässig innerhalb eines VirtualHosts und werden deshalb in security.conf
+# gepflegt.
+sed -i -E 's/^#?ServerTokens[[:space:]]+.*/ServerTokens Prod/' /etc/apache2/conf-available/security.conf
+sed -i -E 's/^#?ServerSignature[[:space:]]+.*/ServerSignature Off/' /etc/apache2/conf-available/security.conf
+sed -i -E 's/^#?TraceEnable[[:space:]]+.*/TraceEnable Off/' /etc/apache2/conf-available/security.conf
 
 # Deaktivieren des mpm_event Moduls
 echo -e "${GREEN}Deaktivieren des Apache mpm_event Moduls...${NC}"
@@ -77,29 +86,31 @@ echo -e "${GREEN}Setzen der Ordnerberechtigungen...${NC}"
 chown -R www-data:www-data /var/www/besuchermanagement || error_exit "Fehler beim Setzen des Eigentümers."
 chmod -R 755 /var/www/besuchermanagement || error_exit "Fehler beim Setzen der Berechtigungen."
 
-# Sicherstellen, dass das backup/ und logs/ Verzeichnis existieren und beschreibbar sind
-echo -e "${GREEN}Erstellen und Setzen der Berechtigungen für backup/ und logs/ Verzeichnisse...${NC}"
-mkdir -p /var/www/besuchermanagement/backup || error_exit "Fehler beim Erstellen des backup/ Verzeichnisses."
+# Sicherstellen, dass das externe Backup- und Logs-Verzeichnis existieren und beschreibbar sind
+echo -e "${GREEN}Erstellen und Setzen der Berechtigungen für Backup- und Logs-Verzeichnisse...${NC}"
+mkdir -p /var/backups/besuchermanagement || error_exit "Fehler beim Erstellen des Backup-Verzeichnisses."
+chown root:www-data /var/backups/besuchermanagement
+chmod 770 /var/backups/besuchermanagement
 mkdir -p /var/www/besuchermanagement/logs || error_exit "Fehler beim Erstellen des logs/ Verzeichnisses."
-chown -R www-data:www-data /var/www/besuchermanagement/backup /var/www/besuchermanagement/logs || error_exit "Fehler beim Setzen der Eigentümer für backup/ und logs/ Verzeichnisse."
-chmod -R 775 /var/www/besuchermanagement/backup /var/www/besuchermanagement/logs || error_exit "Fehler beim Setzen der Berechtigungen für backup/ und logs/ Verzeichnisse."
+chown -R www-data:www-data /var/www/besuchermanagement/logs || error_exit "Fehler beim Setzen der Eigentümer für logs/ Verzeichnis."
+chmod -R 700 /var/www/besuchermanagement/logs || error_exit "Fehler beim Setzen der Berechtigungen für logs/ Verzeichnis."
+chmod 750 /var/www/besuchermanagement/bin/kiosk-print-agent.sh /var/www/besuchermanagement/bin/expire_planned_visits.php /var/www/besuchermanagement/bin/retention.php
 
 # Generieren eines zufälligen Datenbankpassworts (falls benötigt)
 echo -e "${GREEN}Generieren eines zufälligen Datenbankpassworts...${NC}"
-DB_PASSWORD=$(openssl rand -base64 12) || error_exit "Fehler bei der Generierung des Datenbankpassworts."
-echo "Generiertes Datenbankpasswort: $DB_PASSWORD"
+DB_PASSWORD=$(openssl rand -hex 24) || error_exit "Fehler bei der Generierung des Datenbankpassworts."
 
 # MariaDB einrichten
 echo -e "${GREEN}Einrichten von MariaDB...${NC}"
 mysql -e "CREATE DATABASE IF NOT EXISTS besuchermanagement CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || error_exit "Fehler beim Erstellen der Datenbank."
-mysql -e "CREATE USER IF NOT EXISTS 'bm_user'@'localhost' IDENTIFIED BY '$DB_PASSWORD';" || error_exit "Fehler beim Erstellen des Datenbankbenutzers."
-mysql -e "GRANT ALL PRIVILEGES ON besuchermanagement.* TO 'bm_user'@'localhost';" || error_exit "Fehler beim Gewähren der Berechtigungen."
+mysql -e "CREATE USER IF NOT EXISTS 'bm_runtime'@'localhost' IDENTIFIED BY '$DB_PASSWORD';" || error_exit "Fehler beim Erstellen des Datenbankbenutzers."
+mysql -e "GRANT SELECT, INSERT, UPDATE, DELETE ON besuchermanagement.* TO 'bm_runtime'@'localhost';" || error_exit "Fehler beim Gewähren der Berechtigungen."
 mysql -e "FLUSH PRIVILEGES;" || error_exit "Fehler beim Aktualisieren der Berechtigungen."
 
 # Importieren des Datenbankschemas
 echo -e "${GREEN}Importieren des Datenbankschemas...${NC}"
 if [ -f "schema.sql" ]; then
-    mysql -u bm_user -p"$DB_PASSWORD" besuchermanagement < schema.sql || error_exit "Fehler beim Importieren des Datenbankschemas."
+mysql besuchermanagement < schema.sql || error_exit "Fehler beim Importieren des Datenbankschemas."
 else
     error_exit "schema.sql Datei nicht gefunden im database/ Verzeichnis."
 fi
@@ -111,6 +122,10 @@ while [[ -z "$ADMIN_USERNAME" ]]; do
     echo -e "${RED}Benutzername darf nicht leer sein.${NC}"
     read -p 'Bitte geben Sie den Benutzernamen für den Superadmin-Benutzer ein: ' ADMIN_USERNAME
 done
+
+if [[ ! "$ADMIN_USERNAME" =~ ^[A-Za-z0-9._-]{1,50}$ ]]; then
+    error_exit "Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten."
+fi
 
 read -s -p 'Bitte geben Sie das Passwort für den Superadmin-Benutzer ein: ' ADMIN_PASSWORD
 echo
@@ -128,11 +143,13 @@ done
 
 # Hashen des Admin-Passworts
 echo -e "${GREEN}Hashen des Admin-Passworts...${NC}"
-HASHED_PASSWORD=$(php -r "echo password_hash('$ADMIN_PASSWORD', PASSWORD_BCRYPT);") || error_exit "Fehler beim Hashen des Passworts."
+export ADMIN_PASSWORD
+HASHED_PASSWORD=$(php -r 'echo password_hash(getenv("ADMIN_PASSWORD"), PASSWORD_DEFAULT);') || error_exit "Fehler beim Hashen des Passworts."
+unset ADMIN_PASSWORD
 
 # Admin-Benutzer in die Datenbank einfügen
 echo -e "${GREEN}Einfügen des Superadmin-Benutzers in die Datenbank...${NC}"
-mysql -u bm_user -p"$DB_PASSWORD" besuchermanagement <<EOF
+mysql -u bm_runtime -p"$DB_PASSWORD" besuchermanagement <<EOF
 INSERT INTO users (username, password, first_name, last_name, role, created_at)
 VALUES ('$ADMIN_USERNAME', '$HASHED_PASSWORD', 'Super', 'Admin', 'Superadmin', NOW())
 ON DUPLICATE KEY UPDATE username=username;
@@ -148,12 +165,22 @@ echo -e "${GREEN}Superadmin-Benutzer erfolgreich erstellt.${NC}"
 echo -e "${GREEN}Erstellen der .env-Datei...${NC}"
 
 # .env-Datei erstellen
-cat <<ENVEOF > config/.env
+cat <<ENVEOF > /var/www/besuchermanagement.env
 DB_HOST=localhost
 DB_NAME=besuchermanagement
-DB_USER=bm_user
+DB_USER=bm_runtime
 DB_PASS=$DB_PASSWORD
 DISPLAY_ERRORS=false
+RETENTION_DAYS=365
+BACKUP_RETENTION_DAYS=30
+MAIL_FROM=
+KIOSK_ALLOWED_NETWORKS=127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1/128,fc00::/7
+KIOSK_LOCATION_ID=
+KIOSK_DEVICE_ID=kiosk-01
+PRINT_AGENT_URL=
+PRINT_AGENT_TOKEN=
+JASPER_REPORTS_URL=
+JASPER_REPORTS_TOKEN=
 ENVEOF
 
 # Fehlerbehandlung
@@ -163,6 +190,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Die .env-Datei wurde erfolgreich erstellt."
+chown root:www-data /var/www/besuchermanagement.env || error_exit "Fehler beim Setzen des Eigentümers der .env-Datei."
+chmod 640 /var/www/besuchermanagement.env || error_exit "Fehler beim Setzen der Berechtigungen der .env-Datei."
 
 # Apache-Konfiguration erstellen
 echo -e "${GREEN}Erstellen der Apache-Konfigurationsdatei...${NC}"
@@ -171,9 +200,12 @@ echo -e "${GREEN}Erstellen der Apache-Konfigurationsdatei...${NC}"
 cat <<APEOF > /etc/apache2/sites-available/besuchermanagement.conf
 <VirtualHost *:80>
     ServerName localhost
+    ServerTokens Prod
+    ServerSignature Off
+    TraceEnable Off
     DocumentRoot /var/www/besuchermanagement
     <Directory /var/www/besuchermanagement>
-        Options Indexes FollowSymLinks
+        Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
     </Directory>
@@ -211,4 +243,3 @@ fi
 # Abschlussmeldung
 echo -e "${GREEN}Installation abgeschlossen. Sie können das Besuchermanagement-System jetzt unter http://localhost aufrufen.${NC}"
 echo -e "${GREEN}Superadmin-Benutzername: $ADMIN_USERNAME${NC}"
-echo -e "${GREEN}Superadmin-Passwort: $ADMIN_PASSWORD${NC}"

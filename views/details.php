@@ -12,19 +12,19 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Überprüfen, ob der Benutzer eingeloggt ist
+// ÃœberprÃ¼fen, ob der Benutzer eingeloggt ist
 if (!isset($_SESSION['user'])) {
     die("<p>Zugriff verweigert. Bitte <a href='login.php'>melden</a> Sie sich an.</p>");
 }
 
-// Zugriff auf den aktuellen Benutzer (optional, falls benötigt)
+// Zugriff auf den aktuellen Benutzer (optional, falls benÃ¶tigt)
 $currentUser = $_SESSION['user'];
 
-// Sicherstellen, dass `visitor_id` vorhanden und gültig ist
+// Sicherstellen, dass `visitor_id` vorhanden und gÃ¼ltig ist
 if (isset($_GET['visitor_id']) && is_numeric($_GET['visitor_id'])) {
     $visitor_id = (int) $_GET['visitor_id'];
 } else {
-    die("<p>Ungültige oder fehlende Besucher-ID.</p>");
+    die("<p>UngÃ¼ltige oder fehlende Besucher-ID.</p>");
 }
 
 try {
@@ -46,8 +46,8 @@ try {
     // Fehlerprotokollierung (optional)
     // $logger->error("Datenbankfehler: " . $e->getMessage());
 
-    // Generische Fehlermeldung für den Benutzer
-    die("<p>Datenbankfehler: Bitte versuchen Sie es später erneut.</p>");
+    // Generische Fehlermeldung fÃ¼r den Benutzer
+    die("<p>Datenbankfehler: Bitte versuchen Sie es spÃ¤ter erneut.</p>");
 }
 ?>
 

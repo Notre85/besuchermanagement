@@ -1,2 +1,9 @@
 config/.env
-.lock
+*.env
+.env
+*.swp
+/logs/*
+!/logs/.gitkeep
+/backup/
+/vendor/
+/assets/vendor/

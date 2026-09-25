@@ -2,10 +2,13 @@
 
 <h2>Bericht erstellen</h2>
 
+<?php if (isset($_GET['error']) && $_GET['error'] === 'invalid_date'): ?><div class="alert alert-danger">Der Zeitraum oder Filter ist ungültig.</div><?php endif; ?>
+<?php if (isset($_GET['error']) && $_GET['error'] === 'report_too_large'): ?><div class="alert alert-danger">Der Bericht enthält mehr als 5.000 Datensätze. Bitte schränken Sie den Zeitraum oder Filter ein.</div><?php endif; ?>
+
 <form method="POST" action="report.php">
     <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
 
-    <!-- Berichtstyp ausw�hlen -->
+    <!-- Berichtstyp auswählen -->
     <div class="row">
         <div class="col-md-6">
             <label for="report_type">Berichtstyp ausw&aumlhlen</label>
@@ -16,14 +19,17 @@
             </select>
         </div>
 
-        <!-- Filter f�r Besucher oder Firma -->
+        <!-- Filter für Besucher oder Firma -->
         <div class="col-md-6" id="filterField" style="display:none;">
             <label for="filter">Filter (Besuchername, Visitor-ID oder Firma)</label>
             <input type="text" id="filter" name="filter" class="form-control">
         </div>
+        <div class="col-md-4"><label for="host_id">Gastgeber</label><select id="host_id" name="host_id" class="form-control"><option value="">Alle</option><?php foreach (($hosts ?? []) as $host): ?><option value="<?= (int) $host['id'] ?>"><?= htmlspecialchars($host['first_name'] . ' ' . $host['last_name'], ENT_QUOTES, 'UTF-8') ?></option><?php endforeach; ?></select></div>
+        <div class="col-md-4"><label for="location_id">Standort</label><select id="location_id" name="location_id" class="form-control"><option value="">Alle</option><?php foreach (($locations ?? []) as $location): ?><option value="<?= (int) $location['id'] ?>"><?= htmlspecialchars($location['name'], ENT_QUOTES, 'UTF-8') ?></option><?php endforeach; ?></select></div>
+        <div class="col-md-4"><label for="visit_status">Status</label><select id="visit_status" name="visit_status" class="form-control"><option value="">Alle</option><option value="checked_in">Anwesend</option><option value="checked_out">Ausgecheckt</option><option value="expired">Abgelaufen</option><option value="cancelled">Storniert</option></select></div>
     </div>
 
-    <!-- Zeitraum ausw�hlen -->
+    <!-- Zeitraum auswählen -->
     <div class="row">
         <div class="col-md-6">
             <label for="start_date">Startdatum</label>
@@ -38,6 +44,8 @@
     
     <button type="submit" name="generate_report" class="btn btn-primary mt-3">Bericht erstellen</button>
     <button type="submit" name="generate_pdf" class="btn btn-secondary mt-3">PDF generieren</button>
+    <button type="submit" name="generate_csv" class="btn btn-outline-secondary mt-3">CSV exportieren</button>
+    <small class="form-text text-muted d-block mt-2">Berichte sind auf 5.000 Datensätze begrenzt.</small>
 </form>
 
 <script>

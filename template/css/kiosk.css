@@ -1,0 +1,49 @@
+* { box-sizing: border-box; }
+body.kiosk-page { margin: 0; min-height: 100vh; background: linear-gradient(135deg, #e8f0f8, #f7f9fc); color: #1d2a3a; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+.kiosk-container { width: min(100% - 32px, 1240px); margin: 0 auto; padding: 24px 0 20px; }
+.kiosk-brand { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 22px; color: #174a7c; font-size: clamp(1.45rem, 3vw, 2rem); font-weight: 750; letter-spacing: .02em; }
+.kiosk-brand img { width: clamp(64px, 8vw, 86px); height: clamp(64px, 8vw, 86px); object-fit: contain; }
+.kiosk-card { background: #fff; border: 1px solid #d7e0ea; border-radius: 18px; box-shadow: 0 14px 40px rgba(24, 55, 87, .14); }
+.kiosk-card-body { padding: clamp(24px, 5vw, 42px); }
+.kiosk-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); gap: clamp(28px, 5vw, 56px); align-items: start; }
+.kiosk-side-column { min-width: 0; }
+.kiosk-card h1 { margin: 0 0 8px; color: #123f69; font-size: clamp(1.7rem, 4vw, 2.25rem); }
+.kiosk-intro { margin: 0 0 26px; color: #5c6b7b; }
+.kiosk-form, .kiosk-checkout-form { display: grid; gap: 16px; }
+.kiosk-field { display: grid; gap: 7px; }
+.kiosk-field label { font-weight: 650; }
+.kiosk-input { width: 100%; border: 1px solid #aebdcb; border-radius: 9px; padding: 11px 13px; background: #fff; color: #1d2a3a; font: inherit; resize: vertical; }
+.kiosk-input:focus { outline: 3px solid rgba(30, 115, 190, .2); border-color: #1e73be; }
+.kiosk-input-large { min-height: 48px; font-size: 1.05rem; }
+.kiosk-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.kiosk-divider { display: flex; align-items: center; gap: 12px; margin: 8px 0; color: #6d7b89; font-size: .92rem; }
+.kiosk-divider::before, .kiosk-divider::after { content: ""; height: 1px; flex: 1; background: #d9e1e8; }
+.kiosk-button { border: 0; border-radius: 9px; min-height: 48px; padding: 11px 18px; font: inherit; font-weight: 700; cursor: pointer; }
+.kiosk-button-primary { background: #1769aa; color: #fff; }
+.kiosk-button-primary:hover { background: #125487; }
+.kiosk-button-secondary { align-self: end; background: #e6f4eb; color: #176b3a; border: 1px solid #9fd0ae; }
+.kiosk-checkout-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; }
+.kiosk-alert { border-radius: 9px; padding: 12px 14px; margin-bottom: 18px; font-weight: 650; }
+.kiosk-alert-success { background: #e6f4eb; color: #176b3a; }
+.kiosk-alert-error { background: #fdebea; color: #9c2d27; }
+.kiosk-alert { opacity: 1; transition: opacity .35s ease, transform .35s ease; }
+.kiosk-alert-hidden { opacity: 0; transform: translateY(-6px); }
+.kiosk-empty { margin: 0; color: #68798a; text-align: center; }
+.kiosk-visitor-list { display: grid; gap: 10px; }
+.kiosk-visitor-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 14px; border: 1px solid #d9e1e8; border-radius: 10px; background: #f8fafc; }
+.kiosk-visitor-row strong, .kiosk-visitor-row span { display: block; }
+.kiosk-visitor-row span { margin-top: 3px; color: #68798a; font-size: .86rem; }
+.kiosk-button-small { min-height: 40px; padding: 8px 13px; white-space: nowrap; }
+.kiosk-modal[hidden] { display: none; }
+.kiosk-modal { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px; }
+.kiosk-modal-backdrop { position: absolute; inset: 0; background: rgba(10, 27, 44, .6); }
+.kiosk-modal-dialog { position: relative; width: min(100%, 520px); padding: 28px; border-radius: 16px; background: #fff; box-shadow: 0 20px 60px rgba(0, 0, 0, .3); }
+.kiosk-modal-dialog h2 { margin: 0 0 20px; color: #123f69; font-size: 1.45rem; }
+.kiosk-modal-close { position: absolute; top: 10px; right: 14px; border: 0; background: transparent; color: #536474; font-size: 2rem; line-height: 1; cursor: pointer; }
+.kiosk-modal-label { display: block; margin-bottom: 7px; font-weight: 650; }
+.kiosk-modal-submit { width: 100%; margin-top: 18px; }
+.kiosk-visitor-row { flex-wrap: wrap; }
+.kiosk-footer { margin: 18px 0 0; text-align: center; color: #68798a; font-size: .9rem; }
+@media (max-width: 600px) { .kiosk-grid, .kiosk-checkout-row { grid-template-columns: 1fr; } .kiosk-button-secondary { width: 100%; } .kiosk-visitor-row { align-items: stretch; flex-direction: column; } }
+@media (max-width: 900px) { .kiosk-layout { grid-template-columns: 1fr; gap: 12px; } }
+@media (orientation: landscape) and (min-width: 901px) and (max-height: 850px) { .kiosk-container { padding-top: 14px; } .kiosk-brand { margin-bottom: 10px; } .kiosk-card-body { padding: 24px 32px; } .kiosk-form, .kiosk-checkout-form { gap: 11px; } }

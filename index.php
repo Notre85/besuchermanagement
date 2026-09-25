@@ -8,16 +8,13 @@ require_once __DIR__ . '/config/csrf.php';
 
 use App\Controllers\CheckInController;
 
-// Starten der Session
-session_start();
-
 $logger = get_logger();
 
 // Initialisieren des Controllers
 $checkInController = new CheckInController($pdo, $logger);
 
-// Überprüfen des 'action' Parameters
-$action = $_GET['action'] ?? null;
+// ÃœberprÃ¼fen des 'action' Parameters
+$action = $_POST['action'] ?? $_GET['action'] ?? null;
 
 switch ($action) {
     case 'checkin':
@@ -29,10 +26,17 @@ switch ($action) {
         // Handle Check-Out via Visit ID oder Visitor ID
         $checkInController->handleCheckOut();
         break;
+    case 'issue_key':
+        $checkInController->handleIssueKey();
+        break;
     
     default:
-        // Standardanzeige der Check-In Seite
-        $checkInController->showCheckInForm();
+        if (isset($_SESSION['user'])) {
+            $checkInController->showCheckInForm();
+        } else {
+            // Der Haupteinstieg bleibt die klassische Loginseite.
+            include __DIR__ . '/views/login_form.php';
+        }
         break;
 }
 ?>

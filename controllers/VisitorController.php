@@ -19,15 +19,19 @@ class VisitorController extends BaseController
     // Anzeige der Besucherverwaltung
     public function showVisitorManagement()
     {
-        $this->requireLogin();
-        $currentUser = $this->getCurrentUser();
-        if (!in_array($currentUser['role'], ['Manager', 'Admin', 'Superadmin'])) {
-            die('Zugriff verweigert.');
-        }
+        $this->requireRole(['Manager', 'Admin', 'Superadmin']);
 
-        // Alle Besucher abfragen und in der View anzeigen
-        $visitors = $this->visitorModel->getAllVisitors();
-        $this->render('visitor_form', ['visitors' => $visitors]); // Die View visitor_form wird gerendert
+        $term = trim($_GET['q'] ?? '');
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 50;
+        $sortOptions = ['id', 'first_name', 'last_name', 'company', 'created_at'];
+        $sort = in_array($_GET['sort'] ?? '', $sortOptions, true) ? $_GET['sort'] : 'last_name';
+        $direction = strtolower($_GET['direction'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+        $total = $term === '' ? count($this->visitorModel->getAllVisitors()) : $this->visitorModel->countSearch($term);
+        $visitors = $term === ''
+            ? $this->visitorModel->search('', $perPage, ($page - 1) * $perPage, $sort, $direction)
+            : $this->visitorModel->search($term, $perPage, ($page - 1) * $perPage, $sort, $direction);
+        $this->render('visitor_form', ['visitors' => $visitors, 'term' => $term, 'page' => $page, 'perPage' => $perPage, 'total' => $total, 'sort' => $sort, 'direction' => $direction]);
     }
 
     // Verarbeitet POST-Anfragen (Aktualisieren oder Löschen)
@@ -52,14 +56,20 @@ class VisitorController extends BaseController
     // Aktualisieren eines Besuchers
     public function updateVisitor()
     {
+        $this->requirePost();
+        $this->requireRole(['Manager', 'Admin', 'Superadmin']);
+        $this->requireCsrf();
         $visitor_id = $_POST['id'] ?? null;
         $first_name = trim($_POST['first_name'] ?? '');
         $last_name = trim($_POST['last_name'] ?? '');
         $company = trim($_POST['company'] ?? '');
 
-        if ($visitor_id && $first_name && $last_name) {
+        if (filter_var($visitor_id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) && $first_name && $last_name && mb_strlen($first_name) <= 50 && mb_strlen($last_name) <= 50 && mb_strlen($company) <= 100) {
             // Besucher-Daten aktualisieren
-            $this->visitorModel->update($visitor_id, $first_name, $last_name, $company);
+            if (!$this->visitorModel->update($visitor_id, $first_name, $last_name, $company)) {
+                $this->redirect('visitor_management.php?error=update_failed');
+            }
+            $this->audit('visitor.update', 'visitor', (int) $visitor_id);
             $this->redirect('visitor_management.php?success=update');
         } else {
             $this->redirect('visitor_management.php?error=invalid_input');
@@ -69,10 +79,16 @@ class VisitorController extends BaseController
     // Löschen eines Besuchers
     public function deleteVisitor()
     {
+        $this->requirePost();
+        $this->requireRole(['Manager', 'Admin', 'Superadmin']);
+        $this->requireCsrf();
         $visitor_id = $_POST['id'] ?? null;
-        if ($visitor_id) {
+        if (filter_var($visitor_id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) {
             // Besucher löschen
-            $this->visitorModel->delete($visitor_id);
+            if (!$this->visitorModel->anonymize((int) $visitor_id)) {
+                $this->redirect('visitor_management.php?error=delete_failed');
+            }
+            $this->audit('visitor.anonymize', 'visitor', (int) $visitor_id);
             $this->redirect('visitor_management.php?success=delete');
         } else {
             $this->redirect('visitor_management.php?error=invalid_input');

@@ -5,7 +5,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Dotenv\Dotenv;
 
-$dotenv = Dotenv::createImmutable(__DIR__);
+$envFile = getenv('BESUCHERMANAGEMENT_ENV_FILE') ?: dirname(__DIR__) . '.env';
+$dotenv = Dotenv::createImmutable(dirname($envFile), basename($envFile));
 $dotenv->load();
 
 try {
@@ -15,5 +16,7 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
 } catch (PDOException $e) {
-    die("Datenbankverbindung fehlgeschlagen: " . $e->getMessage());
+    error_log('Datenbankverbindung fehlgeschlagen: ' . $e->getMessage());
+    http_response_code(503);
+    die('Datenbank momentan nicht verfügbar.');
 }

@@ -1,8 +1,12 @@
 /* template/css/styles.css */
 
+header {
+   height: 90px;
+}
+
 body {
-    padding-top: 70px; /* Platz für die Navigation */
-    padding-bottom: 70px; /* Platz für den Footer */
+    padding-top: 40px; /* Platz für die Navigation */
+    padding-bottom: 40px; /* Platz für den Footer */
 }
 
 footer.footer {

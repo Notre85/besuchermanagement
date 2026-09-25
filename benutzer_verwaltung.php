@@ -8,8 +8,6 @@ require_once __DIR__ . '/config/csrf.php';
 
 use App\Controllers\BenutzerController;
 
-session_start();
-
 $logger = get_logger();
 
 $action = $_GET['action'] ?? null;

@@ -60,10 +60,7 @@ class BenutzerController extends BaseController {
      */
     public function showUserManagement() {
         $this->requireLogin();
-        $currentUser = $this->getCurrentUser();
-        if (!in_array($currentUser['role'], ['Admin', 'Superadmin'])) {
-            die('Zugriff verweigert.');
-        }
+        $this->requireRole(['Admin', 'Superadmin']);
 
         $users = $this->userModel->getAllUsers();
 
@@ -82,6 +79,8 @@ class BenutzerController extends BaseController {
      * Erstellt einen neuen Benutzer.
      */
     public function createUser() {
+        $this->requirePost();
+        $this->requireRole(['Admin', 'Superadmin']);
         if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
             $this->logger->error('CSRF-Token-Validierung fehlgeschlagen beim Erstellen eines Benutzers.');
             $this->redirect('benutzer_verwaltung.php?error=csrf_invalid');
@@ -93,7 +92,7 @@ class BenutzerController extends BaseController {
         $last_name = trim($_POST['last_name'] ?? '');
         $role = $_POST['role'] ?? 'Berichtersteller';
 
-        if (empty($username) || empty($password) || empty($first_name) || empty($last_name)) {
+        if (empty($username) || empty($password) || empty($first_name) || empty($last_name) || !in_array($role, ['Berichtersteller', 'Manager', 'Admin', 'Superadmin'], true) || mb_strlen($username) > 50 || mb_strlen($first_name) > 50 || mb_strlen($last_name) > 50) {
             $this->redirect('benutzer_verwaltung.php?error=required_fields_missing');
         }
 
@@ -101,10 +100,11 @@ class BenutzerController extends BaseController {
         $result = $this->userModel->create($username, $hashed_password, $first_name, $last_name, $role);
 
         if ($result) {
-            $this->logger->info("Neuer Benutzer erstellt: $username");
+            $this->audit('user.create', 'user', (int) $this->pdo->lastInsertId());
+            $this->logger->info('Neuer Benutzer erstellt.');
             $this->redirect('benutzer_verwaltung.php?success=create');
         } else {
-            $this->logger->error("Fehler beim Erstellen des Benutzers: $username");
+            $this->logger->error('Fehler beim Erstellen des Benutzers.');
             $this->redirect('benutzer_verwaltung.php?error=user_creation_failed');
         }
     }
@@ -113,6 +113,8 @@ class BenutzerController extends BaseController {
      * Aktualisiert einen bestehenden Benutzer.
      */
     public function updateUser() {
+        $this->requirePost();
+        $this->requireRole(['Admin', 'Superadmin']);
         if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
             $this->logger->error('CSRF-Token-Validierung fehlgeschlagen beim Aktualisieren eines Benutzers.');
             $this->redirect('benutzer_verwaltung.php?error=csrf_invalid');
@@ -125,7 +127,10 @@ class BenutzerController extends BaseController {
         $role = $_POST['role'] ?? 'Berichtersteller';
         $password = trim($_POST['password'] ?? '');
 
-        if ($id > 0 && !empty($username) && !empty($first_name) && !empty($last_name)) {
+        if ($id > 0 && !empty($username) && !empty($first_name) && !empty($last_name) && in_array($role, ['Berichtersteller', 'Manager', 'Admin', 'Superadmin'], true) && mb_strlen($username) <= 50 && mb_strlen($first_name) <= 50 && mb_strlen($last_name) <= 50) {
+            if (!$this->userModel->mayChangeRoleOrDelete($id, $role)) {
+                $this->redirect('benutzer_verwaltung.php?error=protected_user');
+            }
             if (!empty($password)) {
                 // Passwort wird aktualisiert
                 $hashed_password = password_hash($password, PASSWORD_BCRYPT);
@@ -136,6 +141,7 @@ class BenutzerController extends BaseController {
             }
 
             if ($result) {
+                $this->audit('user.update', 'user', $id);
                 $this->logger->info("Benutzer aktualisiert: ID $id");
                 $this->redirect('benutzer_verwaltung.php?success=update');
             } else {
@@ -152,6 +158,8 @@ class BenutzerController extends BaseController {
      * Löscht einen Benutzer.
      */
     public function deleteUser() {
+        $this->requirePost();
+        $this->requireRole(['Admin', 'Superadmin']);
         if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
             $this->logger->error('CSRF-Token-Validierung fehlgeschlagen beim Löschen eines Benutzers.');
             $this->redirect('benutzer_verwaltung.php?error=csrf_invalid');
@@ -159,8 +167,12 @@ class BenutzerController extends BaseController {
 
         $id = intval($_POST['id'] ?? 0);
         if ($id > 0) {
+            if (!$this->userModel->mayChangeRoleOrDelete($id)) {
+                $this->redirect('benutzer_verwaltung.php?error=protected_user');
+            }
             $result = $this->userModel->delete($id);
             if ($result) {
+                $this->audit('user.delete', 'user', $id);
                 $this->logger->info("Benutzer gelöscht: ID $id");
                 $this->redirect('benutzer_verwaltung.php?success=delete');
             } else {
@@ -173,22 +185,4 @@ class BenutzerController extends BaseController {
         }
     }
 
-    /**
-     * Leitet nach der Ausführung auf die gewünschte Seite um.
-     *
-     * @param string $path Der Pfad zur Datei, auf die umgeleitet werden soll.
-     */
-    protected function redirect($path) {
-        // Hier wird der Redirect auf die benutzer_verwaltung.php im Hauptverzeichnis korrigiert.
-        $baseUrl = '/'; // Passe diesen Basispfad bei Bedarf an
-        header("Location: " . $baseUrl . $path);
-        exit();
-    }
-}
-
-// Instanziieren und Verarbeiten der Anfrage nur, wenn das Skript direkt aufgerufen wird
-if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
-    $logger = get_logger(); // Logger abrufen
-    $controller = new BenutzerController($pdo, $logger); // Controller instanziieren
-    $controller->handleRequest(); // Anfrage verarbeiten
 }

@@ -1,6 +1,5 @@
 <?php
 // template/navigation.php
-session_start();
 require_once __DIR__ . '/../config/csrf.php';
 require_once __DIR__ . '/../config/logger.php';
 require_once __DIR__ . '/../config/db.php';
@@ -32,17 +31,39 @@ $currentUser = isset($_SESSION['user']) ? $_SESSION['user'] : null;
                         </li>
                     <?php endif; ?>
 
-                    <?php if (in_array($currentUser['role'], ['Admin', 'Superadmin'])): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="benutzer_verwaltung.php">Benutzerverwaltung</a>
-                        </li>
-                    <?php if (in_array($currentUser['role'], ['Manager', 'Admin', 'Superadmin'])): ?>
+                    <?php if (in_array($currentUser['role'], ['Manager', 'Admin', 'Superadmin'], true)): ?>
                         <li class="nav-item">
                             <a class="nav-link" href="visitor_management.php">Besucherverwaltung</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="planned_visits.php">Geplante Besuche</a>
+                        </li>
                     <?php endif; ?>
+
+                    <?php if (in_array($currentUser['role'], ['Admin', 'Superadmin'], true)): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="benutzer_verwaltung.php">Benutzerverwaltung</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="master_data.php">Stammdaten</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="drucker_verwaltung.php">Druckerverwaltung</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="key_management.php">Schlüssel</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="template_management.php">Druckvorlagen</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="print_profiles.php">Druckprofile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="audit_log.php">Auditlog</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="print_jobs.php">Druckjobs</a>
                         </li>
                     <?php endif; ?>
 
@@ -59,7 +80,10 @@ $currentUser = isset($_SESSION['user']) ? $_SESSION['user'] : null;
                         </span>
                     </li>
                     <li class="nav-item">
-                        <a href="logout.php" class="btn btn-outline-danger">Logout</a>
+                        <form method="POST" action="logout.php" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generate_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+                            <button type="submit" class="btn btn-outline-danger">Logout</button>
+                        </form>
                     </li>
                 </ul>
             <?php else: ?>
