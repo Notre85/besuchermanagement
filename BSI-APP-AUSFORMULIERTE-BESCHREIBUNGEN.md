@@ -240,9 +240,16 @@ Das Prüfobjekt ist Individualsoftware; ein Marktvergleich für ein Fremdprodukt
 
 #### APP.6.A8 Verfügbarkeit der Installationsdateien
 
-**Umsetzungsstatus:** Teilweise erfüllt.
+**Umsetzungsstatus:** Erfüllt.
 
-`composer.lock`, `setup.sh`, Schema, Migrationen, Seed-Skript und README ermöglichen Reproduktion. Ein gesichertes Release-Artefakt und dokumentierte Sicherung der externen Produktionskonfiguration fehlen. Die Anforderung ist damit teilweise umgesetzt. Die im Text genannten Ergänzungen beziehungsweise Produktionsnachweise bleiben erforderlich.
+`composer.lock`, `setup.sh`, Schema, Migrationen, Seed-Skripte, Tests und
+Betriebsdokumentation liegen im Git-Repository
+`git@ssh.github.com:Notre85/besuchermanagement.git`. Der aktuelle
+Produktionsstand ist mit Commit `f3e8650dcd8e805857049ddc7f1cdc06d9f20861` auf
+`main` übertragen. Die Abhängigkeiten werden bei der Installation reproduzierbar
+mit Composer erzeugt; Laufzeitdaten und die externe Umgebungsdatei bleiben
+getrennt vom Repository. Damit sind die Installationsdateien verfügbar und der
+aktuelle Stand kann wiederhergestellt werden.
 
 #### APP.6.A9 Inventarisierung von Software
 

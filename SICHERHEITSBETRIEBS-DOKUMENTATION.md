@@ -194,6 +194,7 @@ Entscheidung gilt nur für das beschriebene, kontrollierte interne Netz.
 | HTTPS, Redirect und HSTS | Risiko akzeptiert | Neubewertung bei Netzwerk-, Endgeräte- oder Schutzbedarfsänderung |
 | Kiosk-Gerätetoken | Teilweise | Token in der externen Umgebung aktivieren und Proxy-/Kiosk-Übertragung testen |
 | Sicherheitskontakt | Ja | `mailto:iuk.ilsmfrs@brk.de`, bevorzugte Sprache Deutsch |
+| Installationsdateien und Release-Stand | Ja | GitHub-Repository, Branch `main`, Commit `f3e8650dcd8e805857049ddc7f1cdc06d9f20861` |
 | Produktionsrechte und Apache-Laufzeit | Ja | Apache-Konfiguration und Dateirechte am 25.09.2026 geprüft und korrigiert |
 | Penetrationstest | Geplant | Durchführung im nächsten Sicherheitszyklus |
 | Fachliche Abnahme | Ja | Durch den Betreiber als erledigt bestätigt; die dokumentierten Prüfpunkte gelten als abgenommen |
