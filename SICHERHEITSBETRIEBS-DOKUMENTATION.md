@@ -97,6 +97,12 @@ verwaltete Kiosk-Anwendung übertragen werden. Die Aktivierung ist eine
 bewusste Produktionsentscheidung, weil der aktuelle Browser-Kiosk diesen
 Header nicht selbst erzeugt.
 
+Vor jeder Kiosk-Schreibaktion fordert die Oberfläche über `kiosk.php?action=csrf_token`
+einen aktuellen CSRF-Token an und setzt ihn unmittelbar in das Formular. Dadurch
+bleibt der Schutz auch nach langer Leerlaufzeit erhalten, wenn die ursprüngliche
+PHP-Session inzwischen abgelaufen oder ersetzt worden ist. Der Token-Endpunkt
+liefert ausschließlich einen neuen Token und führt keine Schreibaktion aus.
+
 ### Webserver und Dateien
 
 `Options -Indexes` ist aktiv. Konfiguration, Quellverzeichnisse, Logs, Backups,

@@ -38,6 +38,8 @@ test "$(status_code "http://127.0.0.1:${port}/backup.php")" = "405"
 test "$(status_code "http://127.0.0.1:${port}/setup.sh")" = "404"
 test "$(status_code "http://127.0.0.1:${port}/.well-known/security.txt")" = "200"
 test "$(status_code "http://127.0.0.1:${port}/assets/bootstrap/bootstrap.min.css")" = "200"
+csrf_response="$(curl -fsS -c "${log_file}.cookies" -b "${log_file}.cookies" "http://127.0.0.1:${port}/kiosk.php?action=csrf_token")"
+grep -Eq '"csrf_token":"[a-f0-9]{64}"' <<<"$csrf_response"
 
 headers="$(curl -sS -D - -o /dev/null "http://127.0.0.1:${port}/index.php")"
 grep -qi '^cache-control: no-store' <<<"$headers"

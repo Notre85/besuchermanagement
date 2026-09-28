@@ -22,6 +22,13 @@ if ($configuredDeviceToken !== '') {
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'csrf_token') {
+    header('Content-Type: application/json; charset=UTF-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    echo json_encode(['csrf_token' => generate_csrf_token()], JSON_THROW_ON_ERROR);
+    exit;
+}
+
 $controller = new CheckInController($pdo, get_logger());
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $remoteAddress = $_SERVER['REMOTE_ADDR'] ?? 'unknown';

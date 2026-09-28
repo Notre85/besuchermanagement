@@ -63,6 +63,41 @@ document.querySelectorAll('.kiosk-issue-key-button').forEach(function (button) {
     button.addEventListener('click', function () { document.getElementById('kioskIssueKeyVisitId').value = button.dataset.visitId; issueKeyModal.hidden = false; document.getElementById('kioskIssueKeySelect').focus(); });
 });
 document.querySelectorAll('[data-close-issue-key]').forEach(function (element) { element.addEventListener('click', function () { issueKeyModal.hidden = true; }); });
+document.querySelectorAll('form[method="POST"]').forEach(function (form) {
+    form.addEventListener('submit', async function (event) {
+        if (form.dataset.csrfReady === '1') {
+            delete form.dataset.csrfReady;
+            return;
+        }
+        event.preventDefault();
+        var submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true;
+        try {
+            var response = await fetch('kiosk.php?action=csrf_token', {
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) throw new Error('Token konnte nicht abgerufen werden.');
+            var tokenData = await response.json();
+            var tokenInput = form.querySelector('input[name="csrf_token"]');
+            if (!tokenInput || !tokenData.csrf_token) throw new Error('Ungültige Tokenantwort.');
+            tokenInput.value = tokenData.csrf_token;
+            form.dataset.csrfReady = '1';
+            HTMLFormElement.prototype.submit.call(form);
+        } catch (error) {
+            var errorMessage = document.querySelector('.kiosk-alert-error');
+            if (!errorMessage) {
+                errorMessage = document.createElement('div');
+                errorMessage.className = 'kiosk-alert kiosk-alert-error';
+                form.prepend(errorMessage);
+            }
+            errorMessage.textContent = 'Die Sitzung konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.';
+        } finally {
+            if (submitButton && form.dataset.csrfReady !== '1') submitButton.disabled = false;
+        }
+    });
+});
 </script>
 </body>
 </html>

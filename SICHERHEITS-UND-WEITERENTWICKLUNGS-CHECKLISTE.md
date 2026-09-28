@@ -189,6 +189,7 @@ Diese Checkliste ist die Arbeitsgrundlage für die Härtung und Weiterentwicklun
 - [x] Apache-Module und Serverinformationen im Setup härten
 - [x] HTTP-Sicherheits-Smoke-Tests automatisieren
 - [x] Kiosk-Rate-Limits nach IP, Sitzung und Gerätekennung ergänzen
+- [x] Kiosk-CSRF-Token vor jeder Schreibaktion automatisch aktualisieren
 - [x] Optionalen Kiosk-Gerätetoken über `X-Kiosk-Device-Token` vorbereiten
 - [ ] Kiosk-Gerätetoken aktivieren (bewusst zurückgestellt)
 - [ ] HTTPS, Zertifikat, Weiterleitung und HSTS produktiv umsetzen (bewusst zurückgestellt)
