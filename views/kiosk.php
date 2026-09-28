@@ -1,5 +1,26 @@
 <?php $assetBase = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/'); ?>
 <?php $kioskFlash = $_SESSION['kiosk_flash'] ?? null; unset($_SESSION['kiosk_flash']); ?>
+<?php
+$kioskErrorMessages = [
+    'choose_one' => 'Bitte entweder eine Besucher-ID oder eine neue Besuchererfassung verwenden.',
+    'invalid_access_code' => 'Der angegebene Zugangscode ist ungültig.',
+    'invalid_input' => 'Bitte prüfen Sie die Eingaben.',
+    'visit_reason_required' => 'Bitte geben Sie einen Besuchsgrund an.',
+    'required_fields_missing' => 'Bitte Vorname, Nachname und Besuchsgrund ausfüllen.',
+    'visitor_not_found' => 'Die Besucher-ID wurde nicht gefunden.',
+    'visitor_creation_failed' => 'Der Besucher konnte nicht angelegt werden.',
+    'already_checked_in' => 'Dieser Besucher ist bereits eingecheckt.',
+    'invalid_visit_id' => 'Der Besuch ist nicht mehr aktiv oder wurde bereits beendet.',
+    'not_checked_in' => 'Dieser Besucher ist derzeit nicht eingecheckt.',
+    'missing_parameters' => 'Für die Abmeldung fehlen Angaben.',
+    'checkout_failed' => 'Der Check-out konnte nicht gespeichert werden.',
+    'key_issue_invalid' => 'Die Schlüsselausgabe konnte nicht verarbeitet werden.',
+    'key_already_issued' => 'Für diesen Besuch wurde bereits ein Schlüssel ausgegeben.',
+    'key_unavailable' => 'Der ausgewählte Schlüssel ist nicht mehr verfügbar.',
+];
+$kioskErrorCode = (string) ($kioskFlash['code'] ?? '');
+$kioskErrorMessage = $kioskErrorMessages[$kioskErrorCode] ?? 'Die Aktion konnte nicht verarbeitet werden.';
+?>
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -15,7 +36,7 @@
         <span>Besuchermanagement</span>
     </div>
     <section class="kiosk-card" aria-label="Besucher Check-in"><div class="kiosk-card-body">
-        <?php if (($kioskFlash['type'] ?? '') === 'success' && ($kioskFlash['code'] ?? '') === 'checkin'): ?><div class="kiosk-alert kiosk-alert-success">Check-in erfolgreich.</div><?php elseif (($kioskFlash['type'] ?? '') === 'success' && ($kioskFlash['code'] ?? '') === 'checkout'): ?><div class="kiosk-alert kiosk-alert-success">Check-out erfolgreich.</div><?php elseif (($kioskFlash['type'] ?? '') === 'success' && ($kioskFlash['code'] ?? '') === 'key_issued'): ?><div class="kiosk-alert kiosk-alert-success">Schlüssel wurde ausgegeben.</div><?php elseif (($kioskFlash['type'] ?? '') === 'error'): ?><div class="kiosk-alert kiosk-alert-error">Die Anmeldung, Abmeldung oder Schlüsselausgabe konnte nicht verarbeitet werden.</div><?php endif; ?>
+        <?php if (($kioskFlash['type'] ?? '') === 'success' && ($kioskFlash['code'] ?? '') === 'checkin'): ?><div class="kiosk-alert kiosk-alert-success">Check-in erfolgreich.</div><?php elseif (($kioskFlash['type'] ?? '') === 'success' && ($kioskFlash['code'] ?? '') === 'checkout'): ?><div class="kiosk-alert kiosk-alert-success">Check-out erfolgreich.</div><?php elseif (($kioskFlash['type'] ?? '') === 'success' && ($kioskFlash['code'] ?? '') === 'key_issued'): ?><div class="kiosk-alert kiosk-alert-success">Schlüssel wurde ausgegeben.</div><?php elseif (($kioskFlash['type'] ?? '') === 'error'): ?><div class="kiosk-alert kiosk-alert-error"><?= htmlspecialchars($kioskErrorMessage, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
         <div class="kiosk-layout"><div class="kiosk-main-column">
         <form method="POST" action="kiosk.php" class="kiosk-form">
             <input type="hidden" name="kiosk" value="1"><input type="hidden" name="action" value="checkin"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
@@ -23,7 +44,7 @@
             <div class="kiosk-divider"><span>oder neu erfassen</span></div>
             <div class="kiosk-grid"><div class="kiosk-field"><label for="first_name">Vorname</label><input class="kiosk-input kiosk-input-large" id="first_name" name="first_name" maxlength="50"></div><div class="kiosk-field"><label for="last_name">Nachname</label><input class="kiosk-input kiosk-input-large" id="last_name" name="last_name" maxlength="50"></div></div>
             <div class="kiosk-field"><label for="company">Firma</label><input class="kiosk-input kiosk-input-large" id="company" name="company" maxlength="100"></div>
-            <div class="kiosk-field"><label for="visit_reason">Besuchsgrund</label><textarea class="kiosk-input" id="visit_reason" name="visit_reason" maxlength="500" rows="3"></textarea></div>
+            <div class="kiosk-field"><label for="visit_reason">Besuchsgrund</label><textarea class="kiosk-input" id="visit_reason" name="visit_reason" maxlength="500" rows="3" required></textarea></div>
             <button class="kiosk-button kiosk-button-primary" type="submit">Check-in starten</button>
         </form>
         </div><div class="kiosk-side-column">
