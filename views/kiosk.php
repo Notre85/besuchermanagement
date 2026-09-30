@@ -3,6 +3,8 @@
 <?php
 $kioskErrorMessages = [
     'choose_one' => 'Bitte entweder eine Besucher-ID oder eine neue Besuchererfassung verwenden.',
+    'invalid_identifier' => 'Bitte eine Besucher-ID (z. B. 123) oder Termin-ID mit T (z. B. T123) eingeben.',
+    'planned_visit_not_found' => 'Die Termin-ID wurde nicht gefunden, ist abgelaufen oder bereits verwendet.',
     'invalid_access_code' => 'Der angegebene Zugangscode ist ungültig.',
     'invalid_input' => 'Bitte prüfen Sie die Eingaben.',
     'visit_reason_required' => 'Bitte geben Sie einen Besuchsgrund an.',
@@ -40,7 +42,7 @@ $kioskErrorMessage = $kioskErrorMessages[$kioskErrorCode] ?? 'Die Aktion konnte 
         <div class="kiosk-layout"><div class="kiosk-main-column">
         <form method="POST" action="kiosk.php" class="kiosk-form">
             <input type="hidden" name="kiosk" value="1"><input type="hidden" name="action" value="checkin"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
-            <div class="kiosk-field"><label for="visitor_id">Besucher-ID</label><input class="kiosk-input kiosk-input-large" type="number" min="1" id="visitor_id" name="visitor_id" inputmode="numeric"></div>
+            <div class="kiosk-field"><label for="checkin_identifier">Besucher-ID oder Termin-ID</label><input class="kiosk-input kiosk-input-large" type="text" id="checkin_identifier" name="checkin_identifier" inputmode="text" autocomplete="off" placeholder="z. B. 123 oder T123"></div>
             <div class="kiosk-divider"><span>oder neu erfassen</span></div>
             <div class="kiosk-grid"><div class="kiosk-field"><label for="first_name">Vorname</label><input class="kiosk-input kiosk-input-large" id="first_name" name="first_name" maxlength="50"></div><div class="kiosk-field"><label for="last_name">Nachname</label><input class="kiosk-input kiosk-input-large" id="last_name" name="last_name" maxlength="50"></div></div>
             <div class="kiosk-field"><label for="company">Firma</label><input class="kiosk-input kiosk-input-large" id="company" name="company" maxlength="100"></div>

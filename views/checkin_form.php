@@ -15,6 +15,12 @@
                 case 'visitor_not_found':
                     echo 'Besucher mit dieser ID wurde nicht gefunden.';
                     break;
+                case 'invalid_identifier':
+                    echo 'Bitte eine Besucher-ID (z. B. 123) oder Termin-ID mit T (z. B. T123) eingeben.';
+                    break;
+                case 'planned_visit_not_found':
+                    echo 'Die Termin-ID wurde nicht gefunden, ist abgelaufen oder bereits verwendet.';
+                    break;
                 case 'invalid_access_code':
                     echo 'Der Zugangscode ist ungültig oder abgelaufen.';
                     break;
@@ -65,13 +71,13 @@
     <input type="hidden" name="action" value="checkin">
     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generate_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
     
-    <!-- Optional Visitor-ID -->
+    <!-- Besucher- oder Termin-ID -->
     <div class="mb-3">
-        <label for="visitor_id" class="form-label">Besucher-ID (optional)</label>
-        <input type="number" id="visitor_id" name="visitor_id" class="form-control" placeholder="Besucher-ID">
+        <label for="checkin_identifier" class="form-label">Besucher-ID oder Termin-ID (optional)</label>
+        <input type="text" id="checkin_identifier" name="checkin_identifier" class="form-control" placeholder="z. B. 123 oder T123" autocomplete="off">
     </div>
     
-    <p>Oder</p>
+    <p>Für QR-Code oder Zugangscode:</p>
 
     <div class="mb-3">
         <label for="access_code" class="form-label">Termin-Code (optional)</label>

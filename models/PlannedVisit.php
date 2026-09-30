@@ -49,6 +49,33 @@ class PlannedVisit extends BaseModel
         return $stmt->fetch();
     }
 
+    public function findByIdForCheckIn(int $id)
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM planned_visits
+             WHERE id = :id AND status = 'registered' AND ends_at >= NOW()
+             LIMIT 1"
+        );
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch();
+    }
+
+    public function rotateAccessCode(int $id, string $hash, string $expiresAt): bool
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE planned_visits
+             SET access_code_hash = :access_code_hash,
+                 access_code_expires_at = :access_code_expires_at
+             WHERE id = :id AND status = 'registered' AND ends_at >= NOW()"
+        );
+        $stmt->execute([
+            'id' => $id,
+            'access_code_hash' => $hash,
+            'access_code_expires_at' => $expiresAt,
+        ]);
+        return $stmt->rowCount() === 1;
+    }
+
     public function markCheckedIn(int $id): bool
     {
         $stmt = $this->pdo->prepare(

@@ -13,11 +13,13 @@
     </div>
 <?php endif; ?>
 
-<?php if (isset($_GET['success']) && $_GET['success'] === 'created'): ?>
+<?php if (in_array($_GET['success'] ?? '', ['created', 'qr_regenerated'], true) && !empty($accessCode)): ?>
     <?php require_once __DIR__ . '/../vendor/tecnickcom/tcpdf/tcpdf_barcodes_2d.php'; $qr = new \TCPDF2DBarcode('index.php?access_code=' . rawurlencode($accessCode ?? ''), 'QRCODE,M'); ?>
-    <div class="alert alert-success">Besuch angelegt. Einmaliger Zugangscode: <strong><?= htmlspecialchars($accessCode ?? '', ENT_QUOTES, 'UTF-8') ?></strong><br><img alt="QR-Code für den Besuch" width="160" height="160" src="data:image/png;base64,<?= base64_encode($qr->getBarcodePngData(5, 5)) ?>"></div>
+    <div class="alert alert-success"><?= ($_GET['success'] ?? '') === 'created' ? 'Besuch angelegt.' : 'Neuer QR-Code erzeugt; der bisherige Code ist damit ungültig.' ?> Termin-ID: <strong>T<?= (int) $accessCodeVisitId ?></strong><br>Einmaliger Zugangscode: <strong><?= htmlspecialchars($accessCode ?? '', ENT_QUOTES, 'UTF-8') ?></strong><br><img alt="QR-Code für den Besuch" width="160" height="160" src="data:image/png;base64,<?= base64_encode($qr->getBarcodePngData(5, 5)) ?>"></div>
 <?php elseif (isset($_GET['error']) && $_GET['error'] === 'invalid_input'): ?>
     <div class="alert alert-danger">Bitte prüfen Sie Besucher, Zeitraum und Besuchsgrund.</div>
+<?php elseif (isset($_GET['error']) && $_GET['error'] === 'qr_unavailable'): ?>
+    <div class="alert alert-danger">Für diesen Termin kann kein QR-Code mehr erzeugt werden.</div>
 <?php endif; ?>
 
 <form method="POST" action="planned_visits.php?action=create" class="mb-4">
@@ -34,6 +36,6 @@
 </form>
 
 <h3>Kommende Besuche</h3>
-<table class="table table-striped"><thead><tr><th>Besucher</th><th>Zeitraum</th><th>Gastgeber</th><th>Standort</th><th>Status</th></tr></thead><tbody><?php foreach ($plannedVisits as $visit): ?><tr><td><?= htmlspecialchars($visit['first_name'] . ' ' . $visit['last_name'], ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($visit['starts_at'] . ' – ' . $visit['ends_at'], ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($visit['host_email'] ?? '–', ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($visit['location_name'] ?? '–', ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($visit['status'], ENT_QUOTES, 'UTF-8') ?></td></tr><?php endforeach; ?></tbody></table>
+<table class="table table-striped"><thead><tr><th>Termin-ID</th><th>Besucher</th><th>Zeitraum</th><th>Gastgeber</th><th>Standort</th><th>Status</th><th>QR-Code</th></tr></thead><tbody><?php foreach ($plannedVisits as $visit): ?><tr><td><strong>T<?= (int) $visit['id'] ?></strong></td><td><?= htmlspecialchars($visit['first_name'] . ' ' . $visit['last_name'], ENT_QUOTES, 'UTF-8') ?><br><small>Besucher-ID <?= (int) $visit['visitor_id'] ?></small></td><td><?= htmlspecialchars($visit['starts_at'] . ' – ' . $visit['ends_at'], ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($visit['host_email'] ?? '–', ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($visit['location_name'] ?? '–', ENT_QUOTES, 'UTF-8') ?></td><td><?= htmlspecialchars($visit['status'], ENT_QUOTES, 'UTF-8') ?></td><td><?php if ($visit['status'] === 'registered'): ?><form method="POST" action="planned_visits.php?action=regenerate_qr"><input type="hidden" name="planned_visit_id" value="<?= (int) $visit['id'] ?>"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token(), ENT_QUOTES, 'UTF-8') ?>"><button class="btn btn-outline-primary btn-sm" type="submit">Anzeigen / neu erzeugen</button></form><?php else: ?>–<?php endif; ?></td></tr><?php endforeach; ?></tbody></table>
 
 <?php include __DIR__ . '/../template/footer.php'; ?>

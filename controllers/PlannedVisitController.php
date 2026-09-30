@@ -39,8 +39,10 @@ class PlannedVisitController extends BaseController
             'plannedVisits' => $this->plannedVisitModel->findUpcoming(),
             'notificationFailures' => $this->notificationModel->getRecentFailures(),
             'accessCode' => $_SESSION['planned_visit_access_code'] ?? null,
+            'accessCodeVisitId' => $_SESSION['planned_visit_access_code_visit_id'] ?? null,
         ]);
         unset($_SESSION['planned_visit_access_code']);
+        unset($_SESSION['planned_visit_access_code_visit_id']);
     }
 
     public function create()
@@ -99,6 +101,31 @@ class PlannedVisitController extends BaseController
             }
         }
         $_SESSION['planned_visit_access_code'] = $code;
+        $_SESSION['planned_visit_access_code_visit_id'] = $plannedVisitId;
         $this->redirect('planned_visits.php?success=created');
+    }
+
+    public function regenerateAccessCode(): void
+    {
+        $this->requirePost();
+        $this->requireRole(['Manager', 'Admin', 'Superadmin']);
+        $this->requireCsrf();
+
+        $plannedVisitId = filter_input(INPUT_POST, 'planned_visit_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if (!$plannedVisitId) {
+            $this->redirect('planned_visits.php?error=invalid_input');
+        }
+        $plannedVisit = $this->plannedVisitModel->findByIdForCheckIn((int) $plannedVisitId);
+        if (!$plannedVisit) {
+            $this->redirect('planned_visits.php?error=qr_unavailable');
+        }
+        $code = strtoupper(bin2hex(random_bytes(8)));
+        if (!$this->plannedVisitModel->rotateAccessCode((int) $plannedVisitId, hash('sha256', $code), $plannedVisit['ends_at'])) {
+            $this->redirect('planned_visits.php?error=qr_unavailable');
+        }
+        $_SESSION['planned_visit_access_code'] = $code;
+        $_SESSION['planned_visit_access_code_visit_id'] = (int) $plannedVisitId;
+        $this->audit('planned_visit.qr_regenerate', 'planned_visit', (int) $plannedVisitId);
+        $this->redirect('planned_visits.php?success=qr_regenerated');
     }
 }

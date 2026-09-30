@@ -83,7 +83,32 @@ class CheckInController extends BaseController {
         $this->requirePost();
         $this->requireCsrf();
         $this->requireCheckInAccess();
+        $identifier = strtoupper(trim((string) ($_POST['checkin_identifier'] ?? '')));
         $visitorIdInput = trim((string) ($_POST['visitor_id'] ?? ''));
+        if ($identifier !== '') {
+            if (preg_match('/^T([1-9][0-9]*)$/', $identifier, $match)) {
+                $plannedVisit = $this->plannedVisitModel->findByIdForCheckIn((int) $match[1]);
+                if (!$plannedVisit) {
+                    $this->redirect('index.php?error=planned_visit_not_found');
+                }
+                if ($this->visitModel->isVisitorCheckedIn((int) $plannedVisit['visitor_id'])) {
+                    $this->redirect('index.php?error=already_checked_in');
+                }
+                $visitId = $this->visitModel->create((int) $plannedVisit['visitor_id'], $plannedVisit['visit_reason'], (int) $plannedVisit['id']);
+                if (!$visitId || !$this->plannedVisitModel->markCheckedIn((int) $plannedVisit['id'])) {
+                    $this->redirect('index.php?error=already_checked_in');
+                }
+                $this->notifyHost($plannedVisit);
+                $this->finalizeCheckIn($visitId, $plannedVisit['location_id'] ? (int) $plannedVisit['location_id'] : null);
+                $this->audit('visit.checkin', 'visit', $visitId, 'success', ['planned_visit_id' => (int) $plannedVisit['id'], 'identifier_type' => 'planned_visit_id']);
+                $this->redirect('index.php?success=checkin');
+            }
+            if (preg_match('/^[1-9][0-9]*$/', $identifier)) {
+                $visitorIdInput = $identifier;
+            } else {
+                $this->redirect('index.php?error=invalid_identifier');
+            }
+        }
         $visitor_id = $visitorIdInput === '' ? null : filter_var($visitorIdInput, FILTER_VALIDATE_INT);
         $first_name = trim($_POST['first_name'] ?? '');
         $last_name = trim($_POST['last_name'] ?? '');
@@ -91,6 +116,9 @@ class CheckInController extends BaseController {
         $visit_reason = trim($_POST['visit_reason'] ?? '');
         $access_code = strtoupper(trim($_POST['access_code'] ?? ''));
 
+        if ($identifier !== '' && $access_code !== '') {
+            $this->redirect('index.php?error=choose_one');
+        }
         if ($access_code !== '' && $visitor_id !== null) {
             $this->redirect('index.php?error=choose_one');
         }

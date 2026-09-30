@@ -222,5 +222,7 @@ Diese Checkliste ist die Arbeitsgrundlage für die Härtung und Weiterentwicklun
 - [x] Kiosk-Oberfläche mit lokalem, netzunabhängigem Stylesheet ausstatten
 - [x] Kiosk-Layout für Touch-Bedienung und kleine Bildschirme optimieren
 - [x] Kiosk-Check-in per Besucher-ID ermöglichen; Termin-Code bleibt serverseitig vorbereitet
+- [x] Gemeinsames Check-in-Feld für Besucher-ID und Termin-ID mit eindeutigem `T`-Präfix ergänzen
+- [x] Termin-ID im Backend anzeigen und den QR-Code für registrierte Termine sicher neu erzeugen können
 - [x] Aktuell eingecheckte Besucher im Kiosk mit direktem Check-out anzeigen
 - [x] Kiosk-Meldungen automatisch ausblenden und Logo lokal ausliefern

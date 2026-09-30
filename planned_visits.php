@@ -8,7 +8,12 @@ require_once __DIR__ . '/config/csrf.php';
 use App\Controllers\PlannedVisitController;
 
 $controller = new PlannedVisitController($pdo, get_logger());
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['action'] ?? '') === 'create') {
-    $controller->create();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (($_GET['action'] ?? '') === 'create') {
+        $controller->create();
+    }
+    if (($_GET['action'] ?? '') === 'regenerate_qr') {
+        $controller->regenerateAccessCode();
+    }
 }
 $controller->show();
