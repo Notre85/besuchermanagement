@@ -157,6 +157,19 @@
     </tbody>
 </table>
 
+<script>
+(function () {
+    var identifier = document.getElementById('checkin_identifier');
+    var reason = document.getElementById('visit_reason');
+    if (!identifier || !reason) return;
+    var updateReasonRequirement = function () {
+        reason.required = !/^T[1-9][0-9]*$/i.test(identifier.value.trim());
+    };
+    identifier.addEventListener('input', updateReasonRequirement);
+    updateReasonRequirement();
+})();
+</script>
+
 <?php if (isset($_SESSION['user']) && !empty($availableKeys)): ?>
 <div class="modal fade" id="issueKeyModal" tabindex="-1" aria-labelledby="issueKeyModalLabel" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content">

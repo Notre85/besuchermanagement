@@ -86,6 +86,16 @@ document.querySelectorAll('.kiosk-issue-key-button').forEach(function (button) {
     button.addEventListener('click', function () { document.getElementById('kioskIssueKeyVisitId').value = button.dataset.visitId; issueKeyModal.hidden = false; document.getElementById('kioskIssueKeySelect').focus(); });
 });
 document.querySelectorAll('[data-close-issue-key]').forEach(function (element) { element.addEventListener('click', function () { issueKeyModal.hidden = true; }); });
+var kioskIdentifier = document.getElementById('checkin_identifier');
+var kioskVisitReason = document.getElementById('visit_reason');
+if (kioskIdentifier && kioskVisitReason) {
+    var updateKioskReasonRequirement = function () {
+        var plannedVisit = /^T[1-9][0-9]*$/i.test(kioskIdentifier.value.trim());
+        kioskVisitReason.required = !plannedVisit;
+    };
+    kioskIdentifier.addEventListener('input', updateKioskReasonRequirement);
+    updateKioskReasonRequirement();
+}
 document.querySelectorAll('form[method="POST"]').forEach(function (form) {
     form.addEventListener('submit', async function (event) {
         if (form.dataset.csrfReady === '1') {
